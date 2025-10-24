@@ -45,7 +45,7 @@ public class OptimizedAttributeToRoleMapper extends AttributeToRoleMapper {
         String roleName = mapperModel.getConfig().get(ConfigConstants.ROLE);
         RoleModel role = KeycloakModelUtils.getRoleFromString(realm, roleName);
         // If the user is already set up correctly with this role, skip
-        if (role != null && this.applies(mapperModel, context) == user.hasRole(role)) {
+        if (role != null && this.applies(mapperModel, context) == user.getRealmRoleMappingsStream().anyMatch(r -> r.equals(role))) {
             return;
         }
         super.updateBrokeredUser(session, realm, user, mapperModel, context);
