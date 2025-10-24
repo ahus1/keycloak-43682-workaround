@@ -27,7 +27,7 @@ import org.keycloak.models.utils.KeycloakModelUtils;
  * Optimized attribute-to-role-mapper that will skip writing to the database layer if the user is already set up with the correct roles.
  * This is a hotfix until <a href="https://github.com/keycloak/keycloak/issues/43682">#43682</a> is available.
  */
-public class OptimizedAttributeToRoleMapper extends AttributeToRoleMapper {
+    public class OptimizedAttributeToRoleMapper extends AttributeToRoleMapper {
     public static final String PROVIDER_ID = AttributeToRoleMapper.PROVIDER_ID + "-optimized";
 
     @Override
@@ -45,7 +45,8 @@ public class OptimizedAttributeToRoleMapper extends AttributeToRoleMapper {
         String roleName = mapperModel.getConfig().get(ConfigConstants.ROLE);
         RoleModel role = KeycloakModelUtils.getRoleFromString(realm, roleName);
         // If the user is already set up correctly with this role, skip
-        if (role != null && this.applies(mapperModel, context) == user.getRealmRoleMappingsStream().anyMatch(r -> r.equals(role))) {
+        if (role != null && this.applies(mapperModel, context) == (!role.isClientRole() && user.getRealmRoleMappingsStream().anyMatch(r -> r.equals(role))
+                || (role.isClientRole() && user.getClientRoleMappingsStream(session.clients().getClientById(realm, role.getContainerId())).anyMatch(r -> r.equals(role))))) {
             return;
         }
         super.updateBrokeredUser(session, realm, user, mapperModel, context);
